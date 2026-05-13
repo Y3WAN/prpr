@@ -16,6 +16,7 @@ from app.schemas.truck import (
     LocationUpdateResponse, StatusUpdateResponse,
     MenuSchema, OwnerBrief, KeywordsResponse, NearestTruckResponse,
 )
+from app.config import settings
 from app.services.ai_service import generate_keywords
 
 
