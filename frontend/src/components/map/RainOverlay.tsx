@@ -1,9 +1,13 @@
-const DROPS = Array.from({ length: 90 }, (_, i) => ({
-  left: `${((i / 90) * 120) - 10}%`,
-  delay: `-${((i * 0.022) % 1.8).toFixed(2)}s`,
-  duration: `${0.6 + (i % 8) * 0.06}s`,
-  height: `${13 + (i % 10) * 3}px`,
-  opacity: String((0.28 + (i % 6) * 0.07).toFixed(2)),
+// Deterministic pseudo-random based on index to avoid re-render flicker
+const r = (i: number, seed: number, range: number) => ((i * seed + 7919) % range);
+
+const DROPS = Array.from({ length: 160 }, (_, i) => ({
+  left:     `${r(i, 37, 130) - 10}%`,
+  delay:    `-${(r(i, 13, 220) / 100).toFixed(2)}s`,
+  duration: `${(0.38 + r(i, 7, 9) * 0.065).toFixed(2)}s`,
+  height:   `${16 + r(i, 11, 20) * 2}px`,
+  opacity:  `${(0.22 + r(i, 19, 8) * 0.065).toFixed(2)}`,
+  width:    `${i % 5 === 0 ? 2 : 1.5}px`,
 }));
 
 export const RainOverlay = () => (
@@ -13,11 +17,12 @@ export const RainOverlay = () => (
         key={i}
         className="rain-drop"
         style={{
-          left: d.left,
-          animationDelay: d.delay,
+          left:              d.left,
+          animationDelay:    d.delay,
           animationDuration: d.duration,
-          height: d.height,
-          opacity: d.opacity,
+          height:            d.height,
+          opacity:           d.opacity,
+          width:             d.width,
         }}
       />
     ))}

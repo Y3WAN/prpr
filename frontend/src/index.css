@@ -1189,8 +1189,8 @@ body {
 
 /* ─── Rainy Weather Theme ─── */
 @keyframes rain-fall {
-  from { transform: translateY(-40px) translateX(0); }
-  to   { transform: translateY(110vh) translateX(-18px); }
+  from { transform: translateY(-80px) translateX(0); }
+  to   { transform: translateY(110vh) translateX(-45px); }
 }
 
 .rain-overlay {
@@ -1203,11 +1203,11 @@ body {
 
 .rain-drop {
   position: absolute;
-  top: 0;
-  width: 1.5px;
-  background: linear-gradient(to bottom, transparent, rgba(168, 200, 240, 0.65));
-  border-radius: 1px;
+  top: -20px;
+  background: linear-gradient(to bottom, transparent, rgba(190, 220, 255, 0.75));
+  border-radius: 0 0 2px 2px;
   animation: rain-fall linear infinite;
+  will-change: transform;
 }
 
 /* Dark map tint */
