@@ -755,7 +755,8 @@ body {
 
 /* ─── Auth Pages ─── */
 .auth-page {
-  height: 100%;
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
   display: flex;
   align-items: center;
