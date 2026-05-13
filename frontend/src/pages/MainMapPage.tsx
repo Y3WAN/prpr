@@ -7,7 +7,6 @@ import { useGeolocation } from '../hooks/useGeolocation';
 import { KakaoMap } from '../components/map/KakaoMap';
 import { SearchBar } from '../components/map/SearchBar';
 import { CurrentLocationButton } from '../components/map/CurrentLocationButton';
-import { WeatherToggleButton } from '../components/map/WeatherToggleButton';
 import { NoTrucksNearby } from '../components/map/NoTrucksNearby';
 import { PersonalRecommendation } from '../components/map/PersonalRecommendation';
 import { RainOverlay } from '../components/map/RainOverlay';
@@ -62,7 +61,6 @@ const MainMapPage = () => {
           <LoadingSpinner />
         </div>
       )}
-      <WeatherToggleButton />
       <CurrentLocationButton onClick={requestLocation} />
       {hasFetched && !isLoading && trucks.length === 0 && !selectedTruck && (
         <NoTrucksNearby center={center} />
