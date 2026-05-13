@@ -7,6 +7,7 @@ import { useGeolocation } from '../hooks/useGeolocation';
 import { KakaoMap } from '../components/map/KakaoMap';
 import { SearchBar } from '../components/map/SearchBar';
 import { CurrentLocationButton } from '../components/map/CurrentLocationButton';
+import { WeatherToggleButton } from '../components/map/WeatherToggleButton';
 import { NoTrucksNearby } from '../components/map/NoTrucksNearby';
 import { PersonalRecommendation } from '../components/map/PersonalRecommendation';
 import { RainOverlay } from '../components/map/RainOverlay';
@@ -14,13 +15,11 @@ import { FoodTruckBottomSheet } from '../components/truck/FoodTruckBottomSheet';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import type { FoodTruck } from '../types/truck';
 
-const isDev = import.meta.env.DEV;
-
 const MainMapPage = () => {
   const { center, selectedTruck, setSelectedTruck } = useMapStore();
   const { trucks, isLoading, hasFetched } = useTruckStore();
   const { requestLocation, userLocation } = useLocationStore();
-  const { isRaining, checked, checkWeather, setRaining } = useWeatherStore();
+  const { isRaining, checked, checkWeather } = useWeatherStore();
   const weatherChecked = useRef(false);
 
   useGeolocation();
@@ -63,6 +62,7 @@ const MainMapPage = () => {
           <LoadingSpinner />
         </div>
       )}
+      <WeatherToggleButton />
       <CurrentLocationButton onClick={requestLocation} />
       {hasFetched && !isLoading && trucks.length === 0 && !selectedTruck && (
         <NoTrucksNearby center={center} />
@@ -80,15 +80,7 @@ const MainMapPage = () => {
           onClose={() => setSelectedTruck(null)}
         />
       )}
-      {isDev && (
-        <button
-          className="dev-rain-toggle"
-          onClick={() => setRaining(!isRaining)}
-          title="날씨 토글 (개발용)"
-        >
-          {isRaining ? '☀️' : '🌧️'}
-        </button>
-      )}
+
     </div>
   );
 };
