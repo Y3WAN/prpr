@@ -755,14 +755,18 @@ body {
 
 /* ─── Auth Pages ─── */
 .auth-page {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 52px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   overflow-y: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
   background: var(--bg);
+  z-index: 1;
 }
 
 .auth-card {
