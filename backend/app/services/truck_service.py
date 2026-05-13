@@ -210,7 +210,11 @@ async def get_or_generate_keywords(db: AsyncSession, truck_id: int) -> KeywordsR
         raise HTTPException(status_code=404, detail="가게를 찾을 수 없습니다.")
 
     if truck.keywords:
-        return KeywordsResponse(keywords=json.loads(truck.keywords))
+        try:
+            return KeywordsResponse(keywords=json.loads(truck.keywords))
+        except (json.JSONDecodeError, ValueError):
+            truck.keywords = None
+            await db.commit()
 
     # DB에 키워드 없으면 지금 생성
     await _save_keywords(db, truck_id)

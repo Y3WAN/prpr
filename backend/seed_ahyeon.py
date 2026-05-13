@@ -6,6 +6,7 @@
 - 아현역(37.5564, 126.9561) 반경 300m 이내에 분산 배치
 """
 import asyncio
+import json
 import sys
 import os
 
@@ -279,7 +280,7 @@ async def main():
                     "latitude": t["latitude"],
                     "longitude": t["longitude"],
                     "account_info": t["account_info"],
-                    "keywords": t["keywords"],
+                    "keywords": json.dumps(t["keywords"].split(","), ensure_ascii=False),
                 },
             )
             truck_id = res.fetchone()[0]

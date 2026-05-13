@@ -1,5 +1,6 @@
 """테스트 사장 계정 5개 + 푸드트럭 + 메뉴 생성"""
 import asyncio
+import json
 import bcrypt
 from sqlalchemy import text
 from app.database import AsyncSessionLocal
@@ -134,7 +135,7 @@ async def main():
                     "latitude": t["latitude"],
                     "longitude": t["longitude"],
                     "account_info": t["account_info"],
-                    "keywords": t["keywords"],
+                    "keywords": json.dumps(t["keywords"].split(","), ensure_ascii=False),
                 },
             )
             truck_id = res.fetchone()[0]
