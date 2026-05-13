@@ -6,6 +6,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isRestoring: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
   restoreSession: () => void;
@@ -15,6 +16,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  isRestoring: true,
 
   login: (token, user) => {
     localStorage.setItem('token', token);
@@ -28,11 +30,15 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   restoreSession: () => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      set({ isRestoring: false });
+      return;
+    }
     api.get('/auth/me').then(({ data }) => {
-      set({ token, user: data, isAuthenticated: true });
+      set({ token, user: data, isAuthenticated: true, isRestoring: false });
     }).catch(() => {
       localStorage.removeItem('token');
+      set({ isRestoring: false });
     });
   },
 }));

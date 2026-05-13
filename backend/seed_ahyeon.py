@@ -353,8 +353,8 @@ async def main():
 
             await session.execute(
                 text(
-                    "INSERT INTO reviews (truck_id, user_id, rating, content) "
-                    "VALUES (:tid, :uid, :rating, :content)"
+                    "INSERT INTO reviews (truck_id, user_id, rating, content, created_at, updated_at) "
+                    "VALUES (:tid, :uid, :rating, :content, NOW(), NOW())"
                 ),
                 {"tid": truck_id, "uid": customer_id, "rating": r["rating"], "content": r["content"]},
             )
@@ -369,6 +369,10 @@ async def main():
             )
             print(f"  리뷰 작성: {r['owner_email']} ({r['rating']}점)")
 
+        # 기존에 NULL로 삽입된 타임스탬프 일괄 수정
+        await session.execute(
+            text("UPDATE reviews SET created_at = NOW(), updated_at = NOW() WHERE created_at IS NULL")
+        )
         await session.commit()
 
     print("\n완료!")

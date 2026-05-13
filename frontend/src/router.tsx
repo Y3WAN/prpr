@@ -7,15 +7,18 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import MyPage from './pages/MyPage';
 import TruckManagePage from './pages/TruckManagePage';
+import { LoadingSpinner } from './components/common/LoadingSpinner';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isRestoring } = useAuthStore();
+  if (isRestoring) return <LoadingSpinner />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
 
 const OwnerRoute = ({ children }: { children: ReactNode }) => {
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isRestoring } = useAuthStore();
+  if (isRestoring) return <LoadingSpinner />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role !== 'owner') return <Navigate to="/" replace />;
   return <>{children}</>;
