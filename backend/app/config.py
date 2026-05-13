@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GROQ_API_KEY: str = ""
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
+    upload_dir: str = "uploads"
 
     @property
     def allowed_origins_list(self) -> list[str]:

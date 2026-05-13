@@ -13,8 +13,14 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateEmail(email)) {
+      showToast('올바른 이메일 형식을 입력해주세요. (예: example@email.com)', 'error');
+      return;
+    }
     setLoading(true);
     try {
       const { data } = await authApi.login({ email, password });

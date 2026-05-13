@@ -63,6 +63,14 @@ async def create_truck(
     )
 
 
+@router.delete("/my", status_code=204)
+async def delete_my_truck(
+    current_user: User = Depends(require_owner),
+    db: AsyncSession = Depends(get_db),
+):
+    await truck_service.delete_truck(db, current_user)
+
+
 @router.patch("/{truck_id}/menus", response_model=KeywordsResponse)
 async def update_menus(
     truck_id: int,

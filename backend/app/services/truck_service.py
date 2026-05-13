@@ -208,6 +208,15 @@ async def get_or_generate_keywords(db: AsyncSession, truck_id: int) -> KeywordsR
     return KeywordsResponse(keywords=[])
 
 
+async def delete_truck(db: AsyncSession, owner: User) -> None:
+    result = await db.execute(select(FoodTruck).where(FoodTruck.owner_id == owner.id))
+    truck = result.scalar_one_or_none()
+    if not truck:
+        raise HTTPException(status_code=404, detail="등록된 가게가 없습니다.")
+    await db.delete(truck)
+    await db.commit()
+
+
 async def get_nearest_truck(db: AsyncSession, lat: float, lng: float) -> NearestTruckResponse:
     result = await db.execute(select(FoodTruck).where(FoodTruck.is_open == True))
     trucks = result.scalars().all()

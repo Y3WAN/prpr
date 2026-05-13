@@ -15,8 +15,14 @@ const SignupPage = () => {
   const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
+  const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateEmail(form.email)) {
+      showToast('올바른 이메일 형식을 입력해주세요. (예: example@email.com)', 'error');
+      return;
+    }
     setLoading(true);
     try {
       await authApi.signup(form);

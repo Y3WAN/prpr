@@ -26,4 +26,6 @@ export const truckApi = {
 
   updateMenus: (id: number, menus: { name: string; price: number }[]) =>
     api.patch<{ keywords: string[] }>(`/trucks/${id}/menus`, { menus }),
+
+  deleteMy: () => api.delete('/trucks/my'),
 };

@@ -99,6 +99,25 @@ const TruckManagePage = () => {
     }
   };
 
+  const handleDeleteTruck = async () => {
+    if (!window.confirm('가게를 삭제하면 모든 메뉴와 리뷰도 함께 삭제됩니다.\n정말 삭제하시겠습니까?')) return;
+    setSaving(true);
+    try {
+      await truckApi.deleteMy();
+      setTruck(null);
+      setName('');
+      setDescription('');
+      setAccountInfo('');
+      setMenus([{ name: '', price: 0 }]);
+      setEditMenus([{ name: '', price: 0 }]);
+      showToast('가게가 삭제되었습니다.', 'success');
+    } catch {
+      showToast('가게 삭제에 실패했습니다.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleUpdateMenus = async () => {
     if (editMenus.some((m) => !m.name.trim())) {
       showToast('모든 메뉴명을 입력해주세요.', 'warning');
@@ -158,6 +177,14 @@ const TruckManagePage = () => {
             <MenuInputList menus={editMenus} onChange={setEditMenus} />
             <Button onClick={handleUpdateMenus} disabled={menuSaving}>
               {menuSaving ? '저장 중...' : '메뉴 저장'}
+            </Button>
+          </div>
+
+          <div className="manage-danger-zone">
+            <h3>가게 삭제</h3>
+            <p className="manage-danger-desc">가게를 삭제하면 모든 메뉴와 리뷰도 함께 삭제됩니다.</p>
+            <Button variant="danger" onClick={handleDeleteTruck} disabled={saving}>
+              가게 등록 취소
             </Button>
           </div>
         </div>
