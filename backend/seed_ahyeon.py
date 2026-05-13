@@ -15,6 +15,56 @@ from sqlalchemy import text
 from app.database import AsyncSessionLocal
 from app.auth.password import hash_password
 
+CUSTOMER = {
+    "email": "ahyeon_guest@test.com",
+    "password": "Test1234!",
+    "nickname": "아현 단골손님",
+}
+
+# 리뷰 없는 트럭: ahyeon6 (붕어빵), ahyeon9 (샌드위치)
+REVIEWS = [
+    {
+        "owner_email": "ahyeon1@test.com",
+        "rating": 5,
+        "content": "국물이 진짜 끝내줘요! 매콤달콤한 맛이 딱 제 스타일. 아현역 오면 무조건 여기 들러요.",
+    },
+    {
+        "owner_email": "ahyeon2@test.com",
+        "rating": 4,
+        "content": "치즈가 엄청 늘어나서 먹는 재미가 있어요. 바삭하고 고소한 맛 최고!",
+    },
+    {
+        "owner_email": "ahyeon3@test.com",
+        "rating": 5,
+        "content": "오사카에서 먹던 맛이랑 거의 똑같아요. 겉은 바삭 속은 촉촉, 진짜 맛집입니다.",
+    },
+    {
+        "owner_email": "ahyeon4@test.com",
+        "rating": 4,
+        "content": "숯불향이 진짜 살아있어요. 파닭꼬치가 특히 맛있었어요. 야식으로 강추!",
+    },
+    {
+        "owner_email": "ahyeon5@test.com",
+        "rating": 3,
+        "content": "패티는 두툼하고 맛있는데 기다리는 시간이 좀 길어요. 맛 자체는 나쁘지 않아요.",
+    },
+    {
+        "owner_email": "ahyeon7@test.com",
+        "rating": 5,
+        "content": "정통 케밥 맛이 이런 거구나 싶었어요. 고기가 넉넉하게 들어있고 소스도 완벽해요.",
+    },
+    {
+        "owner_email": "ahyeon8@test.com",
+        "rating": 4,
+        "content": "딸기크림 와플 너무 맛있어요. 달달한 거 좋아하는 분들한테 강추. 사진도 잘 나와요.",
+    },
+    {
+        "owner_email": "ahyeon10@test.com",
+        "rating": 4,
+        "content": "순대국밥 국물이 진하고 얼큰해서 속이 확 풀리는 느낌. 점심에 딱이에요.",
+    },
+]
+
 OWNERS = [
     {
         "email": "ahyeon1@test.com", "password": "Test1234!", "nickname": "아현 떡볶이 사장",
@@ -247,10 +297,85 @@ async def main():
 
         await session.commit()
 
+    # 손님 계정 생성 또는 조회
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            text("SELECT id FROM users WHERE email = :email"),
+            {"email": CUSTOMER["email"]},
+        )
+        row = result.fetchone()
+        if row:
+            customer_id = row[0]
+            print(f"\n기존 손님 계정 사용: {CUSTOMER['email']} (id={customer_id})")
+        else:
+            res = await session.execute(
+                text(
+                    "INSERT INTO users (email, password, nickname, role) "
+                    "VALUES (:email, :password, :nickname, 'customer') RETURNING id"
+                ),
+                {
+                    "email": CUSTOMER["email"],
+                    "password": hash_password(CUSTOMER["password"]),
+                    "nickname": CUSTOMER["nickname"],
+                },
+            )
+            customer_id = res.fetchone()[0]
+            print(f"\n손님 계정 생성: {CUSTOMER['email']} (id={customer_id})")
+
+        print("\n리뷰 작성 중...")
+        for r in REVIEWS:
+            # 트럭 owner의 user_id → truck_id 조회
+            res = await session.execute(
+                text(
+                    "SELECT ft.id FROM food_trucks ft "
+                    "JOIN users u ON ft.owner_id = u.id "
+                    "WHERE u.email = :email"
+                ),
+                {"email": r["owner_email"]},
+            )
+            truck_row = res.fetchone()
+            if not truck_row:
+                print(f"  트럭 없음, 스킵: {r['owner_email']}")
+                continue
+            truck_id = truck_row[0]
+
+            # 이미 리뷰 있으면 스킵
+            dup = await session.execute(
+                text(
+                    "SELECT id FROM reviews "
+                    "WHERE truck_id = :tid AND user_id = :uid"
+                ),
+                {"tid": truck_id, "uid": customer_id},
+            )
+            if dup.fetchone():
+                print(f"  리뷰 이미 존재, 스킵: {r['owner_email']}")
+                continue
+
+            await session.execute(
+                text(
+                    "INSERT INTO reviews (truck_id, user_id, rating, content) "
+                    "VALUES (:tid, :uid, :rating, :content)"
+                ),
+                {"tid": truck_id, "uid": customer_id, "rating": r["rating"], "content": r["content"]},
+            )
+            await session.execute(
+                text(
+                    "UPDATE food_trucks "
+                    "SET review_count = review_count + 1, "
+                    "    avg_rating = (avg_rating * review_count + :rating) / (review_count + 1) "
+                    "WHERE id = :tid"
+                ),
+                {"rating": r["rating"], "tid": truck_id},
+            )
+            print(f"  리뷰 작성: {r['owner_email']} ({r['rating']}점)")
+
+        await session.commit()
+
     print("\n완료!")
     print("\n--- 계정 정보 (아현역 테스트) ---")
     for o in OWNERS:
-        print(f"  {o['email']}  /  {o['password']}")
+        print(f"  [사장] {o['email']}  /  {o['password']}")
+    print(f"  [손님] {CUSTOMER['email']}  /  {CUSTOMER['password']}")
     print("----------------------------------")
 
 
