@@ -1,4 +1,5 @@
 import json
+import logging
 from math import cos, radians
 from typing import Optional
 
@@ -19,10 +20,13 @@ from app.schemas.truck import (
 from app.config import settings
 from app.services.ai_service import generate_keywords
 
+logger = logging.getLogger(__name__)
+
 
 async def _save_keywords(db: AsyncSession, truck_id: int) -> None:
     """키워드 생성 후 DB 저장. 실패해도 예외를 삼켜 트럭 등록에 영향 없음."""
-    if not settings.GEMINI_API_KEY:
+    if not settings.GROQ_API_KEY and not settings.GEMINI_API_KEY:
+        logger.warning("키워드 생성 스킵: GROQ_API_KEY, GEMINI_API_KEY 모두 미설정")
         return
     try:
         result = await db.execute(
@@ -38,8 +42,9 @@ async def _save_keywords(db: AsyncSession, truck_id: int) -> None:
         keywords = await generate_keywords(truck.name, truck.description, menu_names, review_contents)
         truck.keywords = json.dumps(keywords, ensure_ascii=False)
         await db.commit()
-    except Exception:
-        pass
+        logger.info("키워드 생성 완료: truck_id=%d, keywords=%s", truck_id, keywords)
+    except Exception as e:
+        logger.error("키워드 생성 실패: truck_id=%d, error=%s", truck_id, e)
 
 
 def _to_list_item(truck: FoodTruck) -> TruckListItem:
@@ -206,6 +211,14 @@ async def get_or_generate_keywords(db: AsyncSession, truck_id: int) -> KeywordsR
 
     if truck.keywords:
         return KeywordsResponse(keywords=json.loads(truck.keywords))
+
+    # DB에 키워드 없으면 지금 생성
+    await _save_keywords(db, truck_id)
+
+    result2 = await db.execute(select(FoodTruck).where(FoodTruck.id == truck_id))
+    updated = result2.scalar_one_or_none()
+    if updated and updated.keywords:
+        return KeywordsResponse(keywords=json.loads(updated.keywords))
     return KeywordsResponse(keywords=[])
 
 
